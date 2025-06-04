@@ -1,15 +1,20 @@
-const express = require("express");
+import express from "express";
+import dotenv from "dotenv";
+import cors from "cors";
+import { connectDB } from "./src/lib/db.js";
+import cookieParser from "cookie-parser";
+
+import authRoutes from './src/routes/auth.route.js'
+import todoRoutes from './src/routes/todos.route.js'
+
+dotenv.config();
+
 const app = express();
-const cors = require('cors');
-
-const authRoutes = require('./src/routes/auth');
-const todoRoutes = require('./src/routes/todos');
-
-const connectDB = require('./src/database/db');
 
 app.use(express.json());
 connectDB();
 app.use(cors());
+app.use(cookieParser());
 
 app.use('/api/auth', authRoutes);
 app.use('/api/todos', todoRoutes);

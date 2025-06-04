@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from "mongoose";
 
 const todoSchema = mongoose.Schema({
     user: {
@@ -13,6 +13,8 @@ const todoSchema = mongoose.Schema({
         type: Boolean,
         default: false
     }
-});
+}, { timestamps: true });
 
-module.exports = mongoose.model('Todo', todoSchema);
+const Todo = mongoose.model("Todo", todoSchema);
+
+export default Todo;
