@@ -1,48 +1,46 @@
-import React, { useState, useEffect } from 'react';
-import api from '../utils/api';
+import { useState, useEffect } from "react";
+import { useTodoStore } from "../store/useTodoStore";
+import { useAuthStore } from "../store/useAuthStore";
+import TodoItem from "../components/TodoItem";
 
-const TodoPage = ({ onLogout }) => {
-  const [todos, setTodos] = useState([]);
-  const [text, setText] = useState('');
+
+const TodoPage = () => {
+  const [text, setText] = useState("");
+  const { authUser, logout } = useAuthStore();
+  const { todos, fetchTodos, addTodo, deleteTodo, toggleTodo } = useTodoStore();
 
   useEffect(() => {
-    api.get('/todos')
-      .then(res => setTodos(res.data))
-      .catch(err => {
-        alert('Session expired');
-        localStorage.removeItem('token');
-        onLogout();
-      });
+    fetchTodos();
   }, []);
 
-  const handleAdd = async () => {
-    const res = await api.post('/todos', { text });
-    setTodos([...todos, res.data]);
-    setText('');
-  };
-
-  const handleDelete = async (id) => {
-    await api.delete(`/todos/${id}`);
-    setTodos(todos.filter(todo => todo._id !== id));
-  };
-
+  if (!authUser) return <div className="text-white">Please log in</div>;
   return (
-    <div>
-      <h2>Your To-Do List</h2>
-      <input value={text} onChange={(e) => setText(e.target.value)} />
-      <button onClick={handleAdd}>Add</button>
-      <ul>
-        {todos.map(todo => (
-          <li key={todo._id}>
-            {todo.text}
-            <button onClick={() => handleDelete(todo._id)}>❌</button>
-          </li>
+    <div className="h-screen mx-auto mt-10 p-10 bg-black">
+      <h1 className="text-2xl font-bold text-white">Your To-Dos</h1>
+      <div className="flex gap-2">
+        <input
+          className="flex-1 border px-2 py-1 rounded"
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+        />
+        <button
+          onClick={() => { addTodo(text); setText(""); }}
+          className="bg-blue-500 text-white px-3 py-1 rounded"
+        >
+          Add
+        </button>
+      </div>
+      <div className="space-y-2">
+        {todos.map((todo) => (
+          <TodoItem
+            key={todo._id}
+            todo={todo}
+            onDelete={deleteTodo}
+            onToggle={toggleTodo}
+          />
         ))}
-      </ul>
-      <button onClick={() => {
-        localStorage.removeItem('token');
-        onLogout();
-      }}>Logout</button>
+      </div>
+      <button onClick={logout} className="mt-4 text-sm text-red-500">Logout</button>
     </div>
   );
 };

@@ -1,32 +1,36 @@
-import React, { useState, useEffect } from 'react';
-import Login from './components/Login';
-import Register from './components/Register';
-import TodoPage from './pages/TodoPage';
+import { useEffect } from "react";
+import { useAuthStore } from "./store/useAuthStore";
+import { Navigate, Route, Routes } from "react-router-dom";
+import SignUpPage from "./components/SignUpPage";
+import LoginPage from "./components/LoginPage";
+import Navbar from "./components/Navbar";
+import { Toaster } from "react-hot-toast";
+import TodoPage from "./pages/TodoPage";
 
 const App = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [showLogin, setShowLogin] = useState(true);
+  const { authUser, checkAuth, isCheckingAuth } = useAuthStore();
 
   useEffect(() => {
-    setIsLoggedIn(!!localStorage.getItem('token'));
-  }, []);
+    checkAuth();
+  }, [checkAuth]);
 
-  if (isLoggedIn) return <TodoPage onLogout={() => setIsLoggedIn(false)} />;
+  console.log({ authUser});
 
+  if(isCheckingAuth && !authUser)
+    return (
+      <div className="flex items-center justify-center h-screen">
+      </div>
+    );
   return (
-    <>
-      {showLogin ? (
-        <Login onLogin={() => setIsLoggedIn(true)} />
-      ) : (
-        <Register onRegister={() => setIsLoggedIn(true)} />
-      )}
-      <p>
-        {showLogin ? "Don't have an account?" : "Already registered?"}
-        <button onClick={() => setShowLogin(!showLogin)}>
-          {showLogin ? "Register" : "Login"}
-        </button>
-      </p>
-    </>
+    <div>
+      <Navbar />
+      <Routes>
+        <Route path="/" element={authUser ? <TodoPage /> : <Navigate to="/login" />} />
+        <Route path="/signup" element={!authUser ? <SignUpPage /> : <Navigate to="/" />} />
+        <Route path="/login" element={!authUser ? <LoginPage /> : <Navigate to="/" />} />
+      </Routes>
+      <Toaster />
+    </div>
   );
 };
 
